@@ -173,41 +173,17 @@ Use the same phase `title` strings in `meta.phases` as in your `phase()` calls.
 
 ### Part 2 — the body (async JavaScript)
 
-Everything after `meta` is the body. It runs inside an `async` function, so you
-`await` at the top level. These globals are injected — **do not import anything**:
+Everything after `meta` is the body. It runs inside an `async` function — `await`
+at the top level. A fixed set of globals is injected; **import nothing**:
+`agent`, `pipeline`, `parallel`, `phase`, `log`, `console`, `budget`, `args`,
+`workflow` (plus an injected `setTimeout`/`clearTimeout` pair). The body's
+`return` value becomes the tool result handed back to Claude.
 
-| Global | Purpose |
-|---|---|
-| `agent(prompt, opts?)` | Spawn one fresh-context subagent. Returns its final text, or a validated object if `opts.schema` is set. Returns `null` if the user skips it. |
-| `pipeline(items, s1, s2, …)` | Run each item through all stages, no barrier between stages. The default for multi-stage work. |
-| `parallel(thunks)` | Run an array of **functions** `() => Promise` concurrently. A barrier. |
-| `phase(title)` | Group the agents that follow under a heading in `/workflows`. |
-| `log(msg)` | Emit a narrator line above the progress tree. |
-| `console` | A standard-looking `console` — its output is routed into the workflow log. |
-| `budget` | `{ total, spent(), remaining() }` — token target for budget-aware loops. |
-| `args` | Whatever was passed as the Workflow tool's `args` input — **passed through unchanged** (an object stays an object). `undefined` if nothing was passed. Normalize it before reading fields (see below). |
-| `workflow(name, args?)` | Run another workflow inline. One level of nesting only. |
-
-The body's `return` value becomes the tool result handed back to Claude.
-
-> **Normalize `args` before reading fields.** The Workflow tool types its `args`
-> input as `unknown`, so the script receives it **exactly as passed** — there is
-> no stringification. `Workflow({ args: { minUsers: 5 } })` gives the script the
-> **object** `{ minUsers: 5 }`; a slash command or hand-call may pass a raw
-> **string**; nothing passed gives `undefined`. One normalizer covers every case
-> — parse *only* when it is actually a string:
->
-> ```js
-> // Object passes straight through; a JSON string parses; plain text and
-> // `undefined` fall through unchanged.
-> const input = typeof args === 'string'
->   ? (() => { try { return JSON.parse(args) } catch { return args } })()
->   : args
-> const threshold = input?.minUsers ?? 20
-> ```
->
-> Do not call `JSON.parse(args)` unconditionally — if `args` is already an object
-> that throws.
+**Read `references/api-reference.md` §5 now** for every global's full signature
+and the `args` normalizer. The one trap to remember inline: `args` arrives
+**exactly as passed** — an object stays an object, a string stays a string,
+nothing passed is `undefined` — so never call `JSON.parse(args)` unconditionally;
+parse only when `typeof args === 'string'`.
 
 ### Setting a model, and getting structured data back — the two `agent()` opts you tune most
 
