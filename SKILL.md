@@ -42,6 +42,26 @@ is in `scripts/`.
 
 ---
 
+## Stability
+
+This skill is pinned to **Claude Code 2.1.149** — the binary against which the
+Workflow tool's internals (globals, caps, journal format) were last verified.
+Two gates control runtime availability:
+
+- **`CLAUDE_CODE_WORKFLOWS=1`** (env var, user-controlled). See Step 0.
+- **`tengu_workflows_enabled`** (Statsig flag, account-controlled). Even with
+  the env var set, the tool stays hidden if the flag is off for the user's
+  account — surface that possibility if `/workflows` does nothing after the
+  export.
+
+**Break-glass.** If a global, cap, or option in `references/api-reference.md`
+does not match a runtime error, re-read the manual section and verify via a
+one-line `Workflow({ scriptPath })` smoke test against a known-good script — do
+not invent behaviour. After a Claude Code upgrade, expect the version pin to
+trail the binary until this section is updated.
+
+---
+
 ## Step 0 — Confirm the Workflow tool is available
 
 A workflow can only **run** if the Workflow tool is enabled. It is **off by
