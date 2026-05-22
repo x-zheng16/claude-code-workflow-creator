@@ -60,8 +60,8 @@ trail the binary until this section is updated.
 ## Step 0 — Confirm the Workflow tool is available
 
 A workflow can only **run** if the Workflow tool is enabled. It is **off by
-default**, gated behind an environment variable. You can always *write* the file,
-but check this so you can tell the user the truth about running it:
+default**, gated behind an environment variable. The file is always worth
+*writing* — check this so the user hears the truth about *running* it:
 
 ```bash
 echo "${CLAUDE_CODE_WORKFLOWS:-<not set>}"
@@ -98,15 +98,15 @@ gated for a reason (it can spend a lot of tokens). Pick deliberately:
 | Many subagents in a **fixed** shape (fan-out / pipeline / loop), same every run, worth resuming | A **Workflow** ✅ |
 
 A workflow earns its cost when **all** of these are true: the work is parallel or
-multi-stage; you want the orchestration deterministic and resumable; and
-isolating each step in its own fresh context window is an advantage. If you are
+multi-stage; the orchestration must be deterministic and resumable; and
+isolating each step in its own fresh context window is an advantage. When
 unsure, say so and offer the lighter option instead.
 
 ---
 
 ## Step 2 — Find the shape of the job
 
-Before writing a line of code, answer these. The answers pick the topology for you.
+Before writing a line of code, answer these — the answers pick the topology.
 
 1. **What is the unit of work?** The thing one subagent does once — review one
    file, research one question, draft one platform. Name it concretely.
@@ -117,8 +117,8 @@ Before writing a line of code, answer these. The answers pick the topology for y
    - Units flow through ordered stages (review → verify) → **pipeline**.
    - Keep going until a target count or a budget runs low → **loop**.
 4. **Does any later step need *all* the earlier results at once** — to dedup,
-   merge, count, or early-exit on a zero total? If yes, you need a **barrier**.
-   If no, you do not — and you should prefer `pipeline`.
+   merge, count, or early-exit on a zero total? If yes, that needs a **barrier**.
+   If no, it does not — prefer `pipeline`.
 5. **Does a step need structured data back** (not free text)? Then that
    `agent()` call needs a `schema`.
 
@@ -142,7 +142,7 @@ This is the call people get wrong, so make it explicitly.
   early-exit. "It is cleaner code" or "the stages feel separate" are **not**
   reasons — a pipeline models separate stages fine.
 
-Smell test: if you would write `const a = await parallel(...)`, then a plain
+Smell test: writing `const a = await parallel(...)`, then a plain
 transform (`flat`/`map`/`filter`) with no cross-item dependency, then another
 `parallel(...)` — that middle transform does not need the barrier. Make it a
 pipeline stage instead. **When in doubt, `pipeline`.**
@@ -169,7 +169,7 @@ export const meta = {
 
 `meta` **must be a pure literal** — no variables, function calls, spreads, or
 template strings inside it. Build dynamic values in the body, never in `meta`.
-Use the same phase `title` strings in `meta.phases` as in your `phase()` calls.
+Use the same phase `title` strings in `meta.phases` as in the `phase()` calls.
 
 ### Part 2 — the body (async JavaScript)
 
@@ -185,7 +185,7 @@ and the `args` normalizer. The one trap to remember inline: `args` arrives
 nothing passed is `undefined` — so never call `JSON.parse(args)` unconditionally;
 parse only when `typeof args === 'string'`.
 
-### Setting a model, and getting structured data back — the two `agent()` opts you tune most
+### Setting a model, and getting structured data back — the two `agent()` opts to tune most
 
 **Model — `agent(prompt, { model })`.** Each agent call runs on its own model.
 Accepts `'haiku'`, `'sonnet'`, `'opus'`, `'inherit'`, or a full model ID; omit it
@@ -200,8 +200,8 @@ to `'haiku'`; leave judgement-heavy work on the inherited model. Two cautions:
   the `agent()` call. For a Haiku phase, set `model` in *both* places: the phase
   entry (honest dialog) and every `agent()` call in it (actual effect).
 
-**Structured output — `agent(prompt, { schema })`.** Without `schema` you get the
-agent's final text as a **string**. Pass a JSON Schema and the agent is *forced*
+**Structured output — `agent(prompt, { schema })`.** Without `schema`, the call
+returns the agent's final text as a **string**. Pass a JSON Schema and the agent is *forced*
 to return a **validated object** matching it — the runtime builds a hidden
 `StructuredOutput` tool from the schema, AJV-validates the result, and makes the
 agent retry on a mismatch. `agent()` returns the parsed object directly — no
@@ -220,7 +220,7 @@ from a file in `assets/templates/`, or adapt a full worked example from
 
 ## Step 5 — Validate before running
 
-Catch the parser's hard rules before you waste a run. Use the bundled linter:
+Catch the parser's hard rules before wasting a run. Use the bundled linter:
 
 ```bash
 node ${CLAUDE_SKILL_DIR}/scripts/validate-workflow.mjs <path-to-file.js>
@@ -237,18 +237,18 @@ Fix every error it reports before invoking the workflow.
 Run a named workflow with `Workflow({ name: 'review-changes' })`, or a file with
 `Workflow({ scriptPath: '…' })`. It runs in the **background** — the call returns
 a run ID immediately and a `<task-notification>` arrives on completion. Watch it
-live with the `/workflows` command, where you can also skip or retry a single
+live with the `/workflows` command, which can also skip or retry a single
 agent mid-run.
 
 To iterate: **edit the saved file**, then re-invoke with
-`Workflow({ scriptPath, resumeFromRunId })`. Every `agent()` call before your
+`Workflow({ scriptPath, resumeFromRunId })`. Every `agent()` call before the
 first edit replays instantly from cache; only the changed call and everything
 after it re-runs. Same script + same args = a 100% cache hit. Never re-paste the
 whole script after the first run — edit the file.
 
 ---
 
-## Gotchas — check every one before you hand over the file
+## Gotchas — check every one before handing over the file
 
 These are the mistakes that actually break workflows:
 
