@@ -2,16 +2,11 @@
 name: workflow-creator
 description: >-
   Author runnable workflow scripts for Claude Code's Workflow tool — deterministic
-  multi-agent orchestration files that fan out fresh-context subagents under plain
-  JavaScript control flow. Use this skill whenever the user wants to create, write,
-  build, scaffold, design, or fix a workflow: "make a workflow", "create a workflow
-  for X", "write a workflow", "turn this into a workflow", "scaffold a multi-agent
-  pipeline", "orchestrate this with subagents deterministically", or any request to
-  author or edit a .js file under .claude/workflows/. Also use it when the user is
-  confused about the workflow script format — the meta block, agent()/parallel()/
-  pipeline()/phase(), schemas, the determinism rules — or when a workflow errors and
-  needs debugging. Do NOT use it to merely run an existing
-  workflow, or for a one-off single-subagent task.
+  JavaScript files that fan out fresh-context subagents under plain control flow.
+  Use when the user wants to create, scaffold, or fix a workflow, or author/edit a
+  .js file under .claude/workflows/: "make a workflow", "create a workflow for X",
+  "turn this into a workflow", "scaffold a multi-agent pipeline". NOT for merely
+  running an existing workflow, or a one-off single-subagent task.
 ---
 
 # Workflow Creator
@@ -24,7 +19,9 @@ JavaScript** control flow: the loops, the conditionals, the fan-out are plain
 code, and only the leaf `agent()` calls spend model tokens. The Workflow tool is
 new and undocumented, so this skill carries the format, the judgment calls, and a
 tested authoring procedure. Use it to write a new workflow, convert a multi-step
-job into one, or fix a broken script.
+job into one, fix a broken script, or explain the format — the `meta` block,
+`agent()`/`parallel()`/`pipeline()`/`phase()`, schemas, the determinism rules —
+when the user is confused about workflows or a workflow errors.
 
 The deep material lives in two reference files — read them when the step says so:
 
