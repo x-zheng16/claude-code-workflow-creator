@@ -201,8 +201,8 @@ to `'haiku'`; leave judgement-heavy work on the inherited model. Two cautions:
   entry (honest dialog) and every `agent()` call in it (actual effect).
 
 **Structured output — `agent(prompt, { schema })`.** Without `schema`, the call
-returns the agent's final text as a **string**. Pass a JSON Schema and the agent is *forced*
-to return a **validated object** matching it — the runtime builds a hidden
+returns the agent's final text as a **string**. Pass a JSON Schema and the agent is
+*forced* to return a **validated object** matching it — the runtime builds a hidden
 `StructuredOutput` tool from the schema, AJV-validates the result, and makes the
 agent retry on a mismatch. `agent()` returns the parsed object directly — no
 `JSON.parse`. Use `schema` for any result a later line of JavaScript reads a
