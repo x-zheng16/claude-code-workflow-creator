@@ -10,9 +10,7 @@ description: >-
   author or edit a .js file under .claude/workflows/. Also use it when the user is
   confused about the workflow script format — the meta block, agent()/parallel()/
   pipeline()/phase(), schemas, the determinism rules — or when a workflow errors and
-  needs debugging. Trigger this even when the user only describes a repeatable
-  multi-step or parallel job and seems to want it packaged as a workflow, even if
-  they never say the word "workflow". Do NOT use it to merely run an existing
+  needs debugging. Do NOT use it to merely run an existing
   workflow, or for a one-off single-subagent task.
 ---
 
