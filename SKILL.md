@@ -278,46 +278,15 @@ These are the mistakes that actually break workflows:
 
 ## Worked example — review a branch, verify each finding
 
-The shape: fan out one reviewer per dimension; the moment a dimension's review
-returns, fan out a verifier per finding. `pipeline`, because a finding should
-verify as soon as *its* review is done — no waiting for the slowest dimension.
+The canonical worked example is `assets/examples/review-branch.js`: fan out one
+reviewer per dimension, then — the instant a dimension's review returns — fan out
+a verifier per finding. Read it next to `assets/examples/README.md`, which maps
+it to its topology and the model / structured-output techniques it demonstrates.
 
-```js
-export const meta = {
-  name: 'review-branch',
-  description: 'Review the branch across dimensions, adversarially verify each finding',
-  phases: [{ title: 'Review' }, { title: 'Verify' }],
-}
-
-const FINDINGS = { type: 'object', required: ['findings'], properties: {
-  findings: { type: 'array', items: { type: 'object', required: ['title', 'file'],
-    properties: { title: { type: 'string' }, file: { type: 'string' } } } } } }
-const VERDICT = { type: 'object', required: ['isReal'], properties: {
-  isReal: { type: 'boolean' }, reason: { type: 'string' } } }
-
-const DIMENSIONS = [
-  { key: 'bugs', prompt: 'Find logic bugs in the changed files on this branch.' },
-  { key: 'perf', prompt: 'Find performance regressions in the changed files.' },
-  { key: 'tests', prompt: 'Find missing or weak test coverage in the changes.' },
-]
-
-const results = await pipeline(
-  DIMENSIONS,
-  d => agent(d.prompt, { label: `review:${d.key}`, phase: 'Review', schema: FINDINGS }),
-  review => parallel((review?.findings ?? []).map(f => () =>
-    agent(`Adversarially verify this finding. Try to refute it. Finding: ${f.title} (${f.file})`,
-          { label: `verify:${f.file}`, phase: 'Verify', schema: VERDICT })
-      .then(v => ({ ...f, verdict: v }))
-  ))
-)
-
-const confirmed = results.flat().filter(Boolean).filter(f => f.verdict?.isReal)
-return { confirmedCount: confirmed.length, confirmed }
-```
-
-Trace it: dimension `bugs` can be verifying its findings while `perf` is still
-being reviewed. No wasted wall-clock. Each agent reasons from a clean context.
-The orchestrator JavaScript spends zero model tokens.
+It uses `pipeline` rather than `parallel` on purpose: a finding should verify the
+moment *its own* review is done, so dimension `bugs` can be verifying while `perf`
+is still under review — no waiting for the slowest dimension, each agent reasons
+from a clean context, and the orchestrator JavaScript spends zero model tokens.
 
 ---
 
