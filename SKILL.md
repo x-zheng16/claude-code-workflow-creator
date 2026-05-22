@@ -223,7 +223,7 @@ from a file in `assets/templates/`, or adapt a full worked example from
 Catch the parser's hard rules before you waste a run. Use the bundled linter:
 
 ```bash
-node ~/.claude/skills/workflow-creator/scripts/validate-workflow.mjs <path-to-file.js>
+node ${CLAUDE_SKILL_DIR}/scripts/validate-workflow.mjs <path-to-file.js>
 ```
 
 It flags: missing or non-first `meta`, a non-literal `meta`, a missing
